@@ -1,22 +1,30 @@
 name: RDP-GitHub
 
-on:
-  workflow_dispatch:
+on: workflow_dispatch
 
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
+    
+      - name: Set up job
+        run: echo "Starting RDP Setup"
+
       - name: Enable RDP
         run: |
-          Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+          Write-Host "Checking RDP status..."
+          Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-          net user "runneradmin" "Password123" /add
-          net localgroup "Administrators" "runneradmin" /add
+          net user github /add
+          net localgroup administrators github /add
+          Write-Host "RDP is enabled."
 
       - name: Get Public IP
-        run: curl ifconfig.me
+        run: |
+          $ip = (Invoke-WebRequest -Uri "http://ifconfig.me" -UseBasicParsing).Content
+          Write-Host "Public IP: $ip"
 
       - name: Keep RDP Alive
-        run: Start-Sleep -Seconds 21600
+        run: |
+          Write-Host "Keeping RDP session alive..."
+          Start-Sleep -Seconds 21600
