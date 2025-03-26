@@ -1,0 +1,22 @@
+name: RDP-GitHub
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Enable RDP
+        run: |
+          Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          net user "runneradmin" "Password123" /add
+          net localgroup "Administrators" "runneradmin" /add
+
+      - name: Get Public IP
+        run: curl ifconfig.me
+
+      - name: Keep RDP Alive
+        run: Start-Sleep -Seconds 21600
